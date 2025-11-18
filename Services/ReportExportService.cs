@@ -10,6 +10,7 @@ using OfficeOpenXml.Style;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 using System.IO.Compression;
+using System.Drawing;
 
 namespace RevitShortcuts.Services
 {
@@ -25,9 +26,6 @@ namespace RevitShortcuts.Services
         {
             _doc = doc;
             _summary = summary;
-
-            // Set EPPlus license context
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
         }
 
         #region Excel Export
@@ -188,8 +186,8 @@ namespace RevitShortcuts.Services
             {
                 range.Style.Font.Bold = true;
                 range.Style.Fill.PatternType = ExcelFillStyle.Solid;
-                range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(79, 129, 189));
-                range.Style.Font.Color.SetColor(System.Drawing.Color.White);
+                range.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(79, 129, 189));
+                range.Style.Font.Color.SetColor(Color.White);
             }
 
             int row = 2;
@@ -211,12 +209,12 @@ namespace RevitShortcuts.Services
                     if (!result.Passed)
                     {
                         worksheet.Cells[row, 3].Style.Fill.PatternType = ExcelFillStyle.Solid;
-                        worksheet.Cells[row, 3].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(255, 199, 206));
+                        worksheet.Cells[row, 3].Style.Fill.BackgroundColor.SetColor(Color.FromArgb(255, 199, 206));
                     }
                     else
                     {
                         worksheet.Cells[row, 3].Style.Fill.PatternType = ExcelFillStyle.Solid;
-                        worksheet.Cells[row, 3].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(198, 239, 206));
+                        worksheet.Cells[row, 3].Style.Fill.BackgroundColor.SetColor(Color.FromArgb(198, 239, 206));
                     }
 
                     row++;
@@ -243,8 +241,8 @@ namespace RevitShortcuts.Services
             {
                 range.Style.Font.Bold = true;
                 range.Style.Fill.PatternType = ExcelFillStyle.Solid;
-                range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(79, 129, 189));
-                range.Style.Font.Color.SetColor(System.Drawing.Color.White);
+                range.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(79, 129, 189));
+                range.Style.Font.Color.SetColor(Color.White);
             }
 
             int row = 2;
@@ -281,8 +279,8 @@ namespace RevitShortcuts.Services
             {
                 range.Style.Font.Bold = true;
                 range.Style.Fill.PatternType = ExcelFillStyle.Solid;
-                range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(79, 129, 189));
-                range.Style.Font.Color.SetColor(System.Drawing.Color.White);
+                range.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(79, 129, 189));
+                range.Style.Font.Color.SetColor(Color.White);
             }
 
             int row = 2;
@@ -313,8 +311,8 @@ namespace RevitShortcuts.Services
             {
                 range.Style.Font.Bold = true;
                 range.Style.Fill.PatternType = ExcelFillStyle.Solid;
-                range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(79, 129, 189));
-                range.Style.Font.Color.SetColor(System.Drawing.Color.White);
+                range.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(79, 129, 189));
+                range.Style.Font.Color.SetColor(Color.White);
             }
 
             int row = 2;
@@ -342,21 +340,21 @@ namespace RevitShortcuts.Services
             switch (grade)
             {
                 case "A":
-                    cell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(0, 176, 80));
-                    cell.Style.Font.Color.SetColor(System.Drawing.Color.White);
+                    cell.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(0, 176, 80));
+                    cell.Style.Font.Color.SetColor(Color.White);
                     break;
                 case "B":
-                    cell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(146, 208, 80));
+                    cell.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(146, 208, 80));
                     break;
                 case "C":
-                    cell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(255, 217, 102));
+                    cell.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(255, 217, 102));
                     break;
                 case "D":
-                    cell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(255, 153, 0));
+                    cell.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(255, 153, 0));
                     break;
                 case "F":
-                    cell.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.FromArgb(255, 0, 0));
-                    cell.Style.Font.Color.SetColor(System.Drawing.Color.White);
+                    cell.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(255, 0, 0));
+                    cell.Style.Font.Color.SetColor(Color.White);
                     break;
             }
         }

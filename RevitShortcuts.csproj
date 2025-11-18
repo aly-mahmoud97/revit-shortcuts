@@ -39,14 +39,14 @@
     <Reference Include="PresentationFramework" />
     <Reference Include="WindowsBase" />
     <Reference Include="System.Xaml" />
+    <Reference Include="System.Drawing" />
   </ItemGroup>
 
   <ItemGroup>
     <!-- NuGet Packages for Export Functionality -->
-    <PackageReference Include="EPPlus" Version="7.0.0" />
-    <PackageReference Include="iTextSharp.LGPLv2.Core" Version="3.4.0" />
+    <PackageReference Include="EPPlus" Version="4.5.3.3" />
+    <PackageReference Include="iTextSharp" Version="5.5.13.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="System.IO.Compression" Version="4.3.0" />
   </ItemGroup>
 
 </Project>
