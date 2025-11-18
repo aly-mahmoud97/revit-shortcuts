@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>Revit Shortcuts</Name>
+    <Assembly>RevitShortcuts.dll</Assembly>
+    <FullClassName>RevitShortcuts.Application</FullClassName>
+    <ClientId>a1b2c3d4-e5f6-7890-abcd-ef1234567890</ClientId>
+    <VendorId>COM</VendorId>
+    <VendorDescription>Your Company Name</VendorDescription>
+    <Description>Revit shortcuts and custom commands to improve productivity</Description>
+  </AddIn>
+</RevitAddIns>
