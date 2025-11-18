@@ -10,7 +10,7 @@ using OfficeOpenXml.Style;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 using System.IO.Compression;
-using System.Drawing;
+using DrawingColor = System.Drawing.Color;
 
 namespace RevitShortcuts.Services
 {
@@ -19,10 +19,10 @@ namespace RevitShortcuts.Services
     /// </summary>
     public class ReportExportService
     {
-        private readonly Document _doc;
+        private readonly Autodesk.Revit.DB.Document _doc;
         private readonly ModelHealthSummary _summary;
 
-        public ReportExportService(Document doc, ModelHealthSummary summary)
+        public ReportExportService(Autodesk.Revit.DB.Document doc, ModelHealthSummary summary)
         {
             _doc = doc;
             _summary = summary;
@@ -186,8 +186,8 @@ namespace RevitShortcuts.Services
             {
                 range.Style.Font.Bold = true;
                 range.Style.Fill.PatternType = ExcelFillStyle.Solid;
-                range.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(79, 129, 189));
-                range.Style.Font.Color.SetColor(Color.White);
+                range.Style.Fill.BackgroundColor.SetColor(DrawingColor.FromArgb(79, 129, 189));
+                range.Style.Font.Color.SetColor(DrawingColor.White);
             }
 
             int row = 2;
@@ -209,12 +209,12 @@ namespace RevitShortcuts.Services
                     if (!result.Passed)
                     {
                         worksheet.Cells[row, 3].Style.Fill.PatternType = ExcelFillStyle.Solid;
-                        worksheet.Cells[row, 3].Style.Fill.BackgroundColor.SetColor(Color.FromArgb(255, 199, 206));
+                        worksheet.Cells[row, 3].Style.Fill.BackgroundColor.SetColor(DrawingColor.FromArgb(255, 199, 206));
                     }
                     else
                     {
                         worksheet.Cells[row, 3].Style.Fill.PatternType = ExcelFillStyle.Solid;
-                        worksheet.Cells[row, 3].Style.Fill.BackgroundColor.SetColor(Color.FromArgb(198, 239, 206));
+                        worksheet.Cells[row, 3].Style.Fill.BackgroundColor.SetColor(DrawingColor.FromArgb(198, 239, 206));
                     }
 
                     row++;
@@ -241,8 +241,8 @@ namespace RevitShortcuts.Services
             {
                 range.Style.Font.Bold = true;
                 range.Style.Fill.PatternType = ExcelFillStyle.Solid;
-                range.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(79, 129, 189));
-                range.Style.Font.Color.SetColor(Color.White);
+                range.Style.Fill.BackgroundColor.SetColor(DrawingColor.FromArgb(79, 129, 189));
+                range.Style.Font.Color.SetColor(DrawingColor.White);
             }
 
             int row = 2;
@@ -279,8 +279,8 @@ namespace RevitShortcuts.Services
             {
                 range.Style.Font.Bold = true;
                 range.Style.Fill.PatternType = ExcelFillStyle.Solid;
-                range.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(79, 129, 189));
-                range.Style.Font.Color.SetColor(Color.White);
+                range.Style.Fill.BackgroundColor.SetColor(DrawingColor.FromArgb(79, 129, 189));
+                range.Style.Font.Color.SetColor(DrawingColor.White);
             }
 
             int row = 2;
@@ -291,7 +291,7 @@ namespace RevitShortcuts.Services
                 {
                     worksheet.Cells[row, 1].Value = category.CategoryName;
                     worksheet.Cells[row, 2].Value = result.CheckName;
-                    worksheet.Cells[row, 3].Value = string.Join(", ", result.AffectedElements.Select(id => id.IntegerValue));
+                    worksheet.Cells[row, 3].Value = string.Join(", ", result.AffectedElements.Select(id => id.Value));
                     row++;
                 }
             }
@@ -311,8 +311,8 @@ namespace RevitShortcuts.Services
             {
                 range.Style.Font.Bold = true;
                 range.Style.Fill.PatternType = ExcelFillStyle.Solid;
-                range.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(79, 129, 189));
-                range.Style.Font.Color.SetColor(Color.White);
+                range.Style.Fill.BackgroundColor.SetColor(DrawingColor.FromArgb(79, 129, 189));
+                range.Style.Font.Color.SetColor(DrawingColor.White);
             }
 
             int row = 2;
@@ -340,21 +340,21 @@ namespace RevitShortcuts.Services
             switch (grade)
             {
                 case "A":
-                    cell.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(0, 176, 80));
-                    cell.Style.Font.Color.SetColor(Color.White);
+                    cell.Style.Fill.BackgroundColor.SetColor(DrawingColor.FromArgb(0, 176, 80));
+                    cell.Style.Font.Color.SetColor(DrawingColor.White);
                     break;
                 case "B":
-                    cell.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(146, 208, 80));
+                    cell.Style.Fill.BackgroundColor.SetColor(DrawingColor.FromArgb(146, 208, 80));
                     break;
                 case "C":
-                    cell.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(255, 217, 102));
+                    cell.Style.Fill.BackgroundColor.SetColor(DrawingColor.FromArgb(255, 217, 102));
                     break;
                 case "D":
-                    cell.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(255, 153, 0));
+                    cell.Style.Fill.BackgroundColor.SetColor(DrawingColor.FromArgb(255, 153, 0));
                     break;
                 case "F":
-                    cell.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(255, 0, 0));
-                    cell.Style.Font.Color.SetColor(Color.White);
+                    cell.Style.Fill.BackgroundColor.SetColor(DrawingColor.FromArgb(255, 0, 0));
+                    cell.Style.Font.Color.SetColor(DrawingColor.White);
                     break;
             }
         }
@@ -365,14 +365,14 @@ namespace RevitShortcuts.Services
 
         public void ExportToPDF(string filePath)
         {
-            Document pdfDoc = new Document(PageSize.A4);
+            iTextSharp.text.Document pdfDoc = new iTextSharp.text.Document(PageSize.A4);
             PdfWriter.GetInstance(pdfDoc, new FileStream(filePath, FileMode.Create));
             pdfDoc.Open();
 
             // Title
             var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 24);
             var title = new Paragraph("Model Health Report", titleFont);
-            title.Alignment = Element.ALIGN_CENTER;
+            title.Alignment = iTextSharp.text.Element.ALIGN_CENTER;
             pdfDoc.Add(title);
 
             pdfDoc.Add(new Paragraph("\n"));
@@ -459,12 +459,12 @@ namespace RevitShortcuts.Services
         private void AddTableRow(PdfPTable table, string label, string value)
         {
             var cellLabel = new PdfPCell(new Phrase(label, FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10)));
-            cellLabel.Border = Rectangle.NO_BORDER;
+            cellLabel.Border = iTextSharp.text.Rectangle.NO_BORDER;
             cellLabel.Padding = 5;
             table.AddCell(cellLabel);
 
             var cellValue = new PdfPCell(new Phrase(value, FontFactory.GetFont(FontFactory.HELVETICA, 10)));
-            cellValue.Border = Rectangle.NO_BORDER;
+            cellValue.Border = iTextSharp.text.Rectangle.NO_BORDER;
             cellValue.Padding = 5;
             table.AddCell(cellValue);
         }
@@ -481,7 +481,7 @@ namespace RevitShortcuts.Services
             if (isHeader)
             {
                 cell.BackgroundColor = new BaseColor(79, 129, 189);
-                cell.HorizontalAlignment = Element.ALIGN_CENTER;
+                cell.HorizontalAlignment = iTextSharp.text.Element.ALIGN_CENTER;
             }
 
             table.AddCell(cell);
