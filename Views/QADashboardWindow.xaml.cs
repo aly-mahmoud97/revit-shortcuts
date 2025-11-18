@@ -9,6 +9,7 @@ using Autodesk.Revit.UI;
 using RevitShortcuts.Services;
 using System.IO;
 using System.Text;
+using WpfGrid = System.Windows.Controls.Grid;
 
 namespace RevitShortcuts.Views
 {
@@ -228,7 +229,7 @@ namespace RevitShortcuts.Views
                 Margin = new Thickness(0, 0, 0, 10)
             };
 
-            var grid = new Grid();
+            var grid = new WpfGrid();
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
@@ -286,7 +287,7 @@ namespace RevitShortcuts.Views
                 contentStack.Children.Add(detailsText);
             }
 
-            Grid.SetColumn(contentStack, 0);
+            WpfGrid.SetColumn(contentStack, 0);
             grid.Children.Add(contentStack);
 
             // Severity badge

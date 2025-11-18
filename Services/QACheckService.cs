@@ -334,7 +334,7 @@ namespace RevitShortcuts.Services
                 var rooms = new FilteredElementCollector(_doc)
                     .OfClass(typeof(SpatialElement))
                     .OfType<Room>()
-                    .Where(r => r.Area > 0 && !r.IsAreaSchemeValid)
+                    .Where(r => r.Area > 0 && r.GetBoundarySegments(new SpatialElementBoundaryOptions()).Count == 0)
                     .ToList();
 
                 result.IssueCount = rooms.Count;
@@ -610,8 +610,8 @@ namespace RevitShortcuts.Services
                     {
                         var drawnBy = s.LookupParameter("Drawn By");
                         var checkedBy = s.LookupParameter("Checked By");
-                        return (drawnBy != null && string.IsNullOrEmpty(drawnBy.AsString())) ||
-                               (checkedBy != null && string.IsNullOrEmpty(checkedBy.AsString()));
+                        return (drawnBy != null && drawnBy.HasValue && string.IsNullOrEmpty(drawnBy.AsString())) ||
+                               (checkedBy != null && checkedBy.HasValue && string.IsNullOrEmpty(checkedBy.AsString()));
                     })
                     .ToList();
 

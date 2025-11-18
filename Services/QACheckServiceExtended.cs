@@ -46,7 +46,7 @@ namespace RevitShortcuts.Services
                     .OfClass(typeof(FamilyInstance))
                     .Cast<FamilyInstance>()
                     .Where(fi => fi.Symbol.Family.IsInPlace &&
-                                archCategories.Contains((BuiltInCategory)fi.Category.Id.IntegerValue))
+                                archCategories.Contains((BuiltInCategory)fi.Category.Id.Value))
                     .ToList();
 
                 result.IssueCount = inPlaceFamilies.Count;
@@ -289,8 +289,16 @@ namespace RevitShortcuts.Services
                     .Cast<CADLinkType>()
                     .ToList();
 
+                // Check if CAD link has instances in the model
+                var cadInstances = new FilteredElementCollector(_doc)
+                    .OfClass(typeof(ImportInstance))
+                    .Cast<ImportInstance>()
+                    .Select(i => i.GetTypeId())
+                    .Distinct()
+                    .ToHashSet();
+
                 var unusedCAD = cadLinks
-                    .Where(c => !c.IsLinked)
+                    .Where(c => !cadInstances.Contains(c.Id))
                     .ToList();
 
                 result.IssueCount = unusedCAD.Count;
@@ -733,17 +741,17 @@ namespace RevitShortcuts.Services
                 var schedules = new FilteredElementCollector(_doc)
                     .OfClass(typeof(ViewSchedule))
                     .Cast<ViewSchedule>()
-                    .Where(s => s.Definition.CategoryId.IntegerValue == (int)BuiltInCategory.OST_Rooms ||
-                               s.Definition.CategoryId.IntegerValue == (int)BuiltInCategory.OST_Doors ||
-                               s.Definition.CategoryId.IntegerValue == (int)BuiltInCategory.OST_Windows ||
-                               s.Definition.CategoryId.IntegerValue == (int)BuiltInCategory.OST_Walls ||
-                               s.Definition.CategoryId.IntegerValue == (int)BuiltInCategory.OST_Floors ||
-                               s.Definition.CategoryId.IntegerValue == (int)BuiltInCategory.OST_Roofs ||
-                               s.Definition.CategoryId.IntegerValue == (int)BuiltInCategory.OST_Stairs ||
-                               s.Definition.CategoryId.IntegerValue == (int)BuiltInCategory.OST_Ceilings ||
-                               s.Definition.CategoryId.IntegerValue == (int)BuiltInCategory.OST_Columns ||
-                               s.Definition.CategoryId.IntegerValue == (int)BuiltInCategory.OST_StructuralColumns ||
-                               s.Definition.CategoryId.IntegerValue == (int)BuiltInCategory.OST_Furniture)
+                    .Where(s => s.Definition.CategoryId.Value == (int)BuiltInCategory.OST_Rooms ||
+                               s.Definition.CategoryId.Value == (int)BuiltInCategory.OST_Doors ||
+                               s.Definition.CategoryId.Value == (int)BuiltInCategory.OST_Windows ||
+                               s.Definition.CategoryId.Value == (int)BuiltInCategory.OST_Walls ||
+                               s.Definition.CategoryId.Value == (int)BuiltInCategory.OST_Floors ||
+                               s.Definition.CategoryId.Value == (int)BuiltInCategory.OST_Roofs ||
+                               s.Definition.CategoryId.Value == (int)BuiltInCategory.OST_Stairs ||
+                               s.Definition.CategoryId.Value == (int)BuiltInCategory.OST_Ceilings ||
+                               s.Definition.CategoryId.Value == (int)BuiltInCategory.OST_Columns ||
+                               s.Definition.CategoryId.Value == (int)BuiltInCategory.OST_StructuralColumns ||
+                               s.Definition.CategoryId.Value == (int)BuiltInCategory.OST_Furniture)
                     .ToList();
 
                 var unusedSchedules = new List<ElementId>();
