@@ -26,25 +26,31 @@ namespace RevitShortcuts
                 // Create a ribbon panel
                 RibbonPanel panel = application.CreateRibbonPanel(tabName, "Commands");
 
-                // Add a push button to the panel
-                PushButtonData buttonData = new PushButtonData(
+                // Add Hello World button
+                PushButtonData helloButtonData = new PushButtonData(
                     "HelloWorldButton",
                     "Hello World",
                     typeof(Application).Assembly.Location,
                     "RevitShortcuts.Commands.HelloWorldCommand"
                 );
 
-                // Optional: Set tooltip
-                buttonData.ToolTip = "Click to execute Hello World command";
-                buttonData.LongDescription = "This is a sample command that demonstrates basic Revit add-in functionality.";
+                helloButtonData.ToolTip = "Click to execute Hello World command";
+                helloButtonData.LongDescription = "This is a sample command that demonstrates basic Revit add-in functionality.";
 
-                // Optional: Add an icon (requires PresentationCore reference and System.Windows.Media.Imaging using)
-                // See README.md "Adding Icons" section for complete instructions
-                // Uri iconUri = new Uri("pack://application:,,,/RevitShortcuts;component/Resources/icon.png");
-                // BitmapImage icon = new BitmapImage(iconUri);
-                // buttonData.LargeImage = icon;
+                PushButton helloButton = panel.AddItem(helloButtonData) as PushButton;
 
-                PushButton button = panel.AddItem(buttonData) as PushButton;
+                // Add QA Dashboard button
+                PushButtonData qaDashboardButtonData = new PushButtonData(
+                    "QADashboardButton",
+                    "QA Dashboard",
+                    typeof(Application).Assembly.Location,
+                    "RevitShortcuts.Commands.QADashboardCommand"
+                );
+
+                qaDashboardButtonData.ToolTip = "Open QA & Quality Checks Dashboard";
+                qaDashboardButtonData.LongDescription = "Launch the comprehensive Quality Assurance dashboard to check your Revit model for common issues, warnings, and quality problems.";
+
+                PushButton qaDashboardButton = panel.AddItem(qaDashboardButtonData) as PushButton;
 
                 return Result.Succeeded;
             }
