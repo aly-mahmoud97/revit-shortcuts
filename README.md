@@ -187,9 +187,19 @@ string tabName = "Revit Shortcuts";  // Change this
 
 ### Adding Icons
 
-1. Add image files (PNG, 32x32 pixels for large icons)
-2. Set Build Action to "Embedded Resource"
-3. Update button creation code in `Application.cs`:
+1. Add the required assembly reference to `RevitShortcuts.csproj`:
+   ```xml
+   <Reference Include="PresentationCore" />
+   ```
+
+2. Add the using statement to `Application.cs`:
+   ```csharp
+   using System.Windows.Media.Imaging;
+   ```
+
+3. Add image files (PNG, 32x32 pixels for large icons)
+4. Set Build Action to "Embedded Resource"
+5. Update button creation code in `Application.cs`:
 
 ```csharp
 Uri iconUri = new Uri("pack://application:,,,/RevitShortcuts;component/Resources/icon.png");

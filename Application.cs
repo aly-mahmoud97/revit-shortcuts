@@ -1,5 +1,4 @@
 using System;
-using System.Windows.Media.Imaging;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.Attributes;
 
@@ -39,7 +38,8 @@ namespace RevitShortcuts
                 buttonData.ToolTip = "Click to execute Hello World command";
                 buttonData.LongDescription = "This is a sample command that demonstrates basic Revit add-in functionality.";
 
-                // Optional: Add an icon (uncomment if you have an icon file)
+                // Optional: Add an icon (requires PresentationCore reference and System.Windows.Media.Imaging using)
+                // See README.md "Adding Icons" section for complete instructions
                 // Uri iconUri = new Uri("pack://application:,,,/RevitShortcuts;component/Resources/icon.png");
                 // BitmapImage icon = new BitmapImage(iconUri);
                 // buttonData.LargeImage = icon;
