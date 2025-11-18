@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
-using Autodesk.Revit.DB.Mechanical;
-using Autodesk.Revit.DB.Plumbing;
 
 namespace RevitShortcuts.Services
 {
     /// <summary>
-    /// Extended comprehensive QA check methods
-    /// This partial class contains additional health checks
+    /// Extended comprehensive QA check methods for Architecture
+    /// This partial class contains additional health checks focused on architectural elements
     /// </summary>
     public partial class QACheckService
     {
@@ -27,17 +25,35 @@ namespace RevitShortcuts.Services
 
             try
             {
+                // Focus on architectural categories only
+                var archCategories = new[]
+                {
+                    BuiltInCategory.OST_Walls,
+                    BuiltInCategory.OST_Floors,
+                    BuiltInCategory.OST_Roofs,
+                    BuiltInCategory.OST_Ceilings,
+                    BuiltInCategory.OST_Doors,
+                    BuiltInCategory.OST_Windows,
+                    BuiltInCategory.OST_Stairs,
+                    BuiltInCategory.OST_Railings,
+                    BuiltInCategory.OST_Columns,
+                    BuiltInCategory.OST_GenericModel,
+                    BuiltInCategory.OST_Furniture,
+                    BuiltInCategory.OST_Casework
+                };
+
                 var inPlaceFamilies = new FilteredElementCollector(_doc)
                     .OfClass(typeof(FamilyInstance))
                     .Cast<FamilyInstance>()
-                    .Where(fi => fi.Symbol.Family.IsInPlace)
+                    .Where(fi => fi.Symbol.Family.IsInPlace &&
+                                archCategories.Contains((BuiltInCategory)fi.Category.Id.IntegerValue))
                     .ToList();
 
                 result.IssueCount = inPlaceFamilies.Count;
                 result.Passed = inPlaceFamilies.Count < 10; // Threshold
                 result.Message = result.Passed
-                    ? $"{inPlaceFamilies.Count} in-place familie(s) found (acceptable)"
-                    : $"{inPlaceFamilies.Count} in-place familie(s) found - consider using loadable families";
+                    ? $"{inPlaceFamilies.Count} architectural in-place familie(s) found (acceptable)"
+                    : $"{inPlaceFamilies.Count} architectural in-place familie(s) found - consider using loadable families";
                 result.AffectedElements = inPlaceFamilies.Select(f => f.Id).ToList();
                 result.RecommendedFix = "Convert in-place families to loadable families where possible for better performance";
                 result.Metrics["InPlaceCount"] = inPlaceFamilies.Count;
@@ -717,11 +733,22 @@ namespace RevitShortcuts.Services
                 var schedules = new FilteredElementCollector(_doc)
                     .OfClass(typeof(ViewSchedule))
                     .Cast<ViewSchedule>()
+                    .Where(s => s.Definition.CategoryId.IntegerValue == (int)BuiltInCategory.OST_Rooms ||
+                               s.Definition.CategoryId.IntegerValue == (int)BuiltInCategory.OST_Doors ||
+                               s.Definition.CategoryId.IntegerValue == (int)BuiltInCategory.OST_Windows ||
+                               s.Definition.CategoryId.IntegerValue == (int)BuiltInCategory.OST_Walls ||
+                               s.Definition.CategoryId.IntegerValue == (int)BuiltInCategory.OST_Floors ||
+                               s.Definition.CategoryId.IntegerValue == (int)BuiltInCategory.OST_Roofs ||
+                               s.Definition.CategoryId.IntegerValue == (int)BuiltInCategory.OST_Stairs ||
+                               s.Definition.CategoryId.IntegerValue == (int)BuiltInCategory.OST_Ceilings ||
+                               s.Definition.CategoryId.IntegerValue == (int)BuiltInCategory.OST_Columns ||
+                               s.Definition.CategoryId.IntegerValue == (int)BuiltInCategory.OST_StructuralColumns ||
+                               s.Definition.CategoryId.IntegerValue == (int)BuiltInCategory.OST_Furniture)
                     .ToList();
 
                 var unusedSchedules = new List<ElementId>();
 
-                // Check if schedules are on sheets
+                // Check if architectural schedules are on sheets
                 var sheets = new FilteredElementCollector(_doc)
                     .OfClass(typeof(ViewSheet))
                     .Cast<ViewSheet>();
@@ -742,11 +769,11 @@ namespace RevitShortcuts.Services
 
                 result.IssueCount = unusedSchedules.Count;
                 result.Passed = unusedSchedules.Count < schedules.Count * 0.3;
-                result.Message = $"{schedules.Count} total schedules, {unusedSchedules.Count} not on sheets";
+                result.Message = $"{schedules.Count} architectural schedules, {unusedSchedules.Count} not on sheets";
                 result.AffectedElements = unusedSchedules;
-                result.RecommendedFix = "Review and place schedules on sheets or delete if not needed";
-                result.Metrics["TotalSchedules"] = schedules.Count;
-                result.Metrics["UnusedSchedules"] = unusedSchedules.Count;
+                result.RecommendedFix = "Review and place architectural schedules on sheets or delete if not needed";
+                result.Metrics["TotalArchSchedules"] = schedules.Count;
+                result.Metrics["UnusedArchSchedules"] = unusedSchedules.Count;
             }
             catch (Exception ex)
             {
