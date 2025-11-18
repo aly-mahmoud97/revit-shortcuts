@@ -309,7 +309,7 @@ namespace RevitShortcuts.Services
                 result.AffectedElements = rooms.Select(r => r.Id).ToList();
                 result.Details = result.Passed
                     ? ""
-                    : string.Join("\n", rooms.Take(10).Select(r => $"Room: {r.Name} (ID: {r.Id.IntegerValue})"));
+                    : string.Join("\n", rooms.Take(10).Select(r => $"Room: {r.Name} (ID: {r.Id.Value})"));
             }
             catch (Exception ex)
             {

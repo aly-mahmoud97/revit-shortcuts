@@ -9,7 +9,7 @@
     <Configurations>Debug;Release</Configurations>
     <PlatformTarget>x64</PlatformTarget>
     <LangVersion>8.0</LangVersion>
-    <EnableDefaultItems>false</EnableDefaultItems>
+    <UseWPF>true</UseWPF>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -57,13 +57,5 @@
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- Source Files -->
-    <Compile Include="**/*.cs" Exclude="bin/**;obj/**" />
-    <Page Include="**/*.xaml" Exclude="bin/**;obj/**">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-  </ItemGroup>
 
 </Project>

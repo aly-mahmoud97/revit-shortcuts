@@ -331,7 +331,7 @@ namespace RevitShortcuts.Views
                 severityPanel.Children.Add(showButton);
             }
 
-            Grid.SetColumn(severityPanel, 1);
+            WpfGrid.SetColumn(severityPanel, 1);
             grid.Children.Add(severityPanel);
 
             itemPanel.Child = grid;
