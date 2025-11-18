@@ -110,8 +110,34 @@
 
         <!-- Summary Cards -->
         <Border Grid.Row="1" Margin="10,15,10,0">
-            <StackPanel x:Name="SummaryPanel" Orientation="Horizontal" HorizontalAlignment="Center">
-                <!-- Summary cards will be added dynamically -->
+            <StackPanel>
+                <!-- Quality Score Section -->
+                <Border Background="White" CornerRadius="8" Padding="20" Margin="10,0,10,10">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.1"/>
+                    </Border.Effect>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Margin="0,0,30,0" VerticalAlignment="Center">
+                            <TextBlock Text="Quality Score" FontSize="14" Foreground="#7F8C8D" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="QualityScoreText" Text="0.0" FontSize="48" FontWeight="Bold"
+                                       Foreground="#2C3E50" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                            <Border x:Name="QualityGradeBadge" CornerRadius="4" Padding="15,5" Margin="0,10,0,0"
+                                    HorizontalAlignment="Center">
+                                <TextBlock x:Name="QualityGradeText" Text="A" FontSize="24" FontWeight="Bold"
+                                           Foreground="White"/>
+                            </Border>
+                        </StackPanel>
+
+                        <StackPanel x:Name="SummaryPanel" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Left">
+                            <!-- Summary cards will be added dynamically -->
+                        </StackPanel>
+                    </Grid>
+                </Border>
             </StackPanel>
         </Border>
 
@@ -137,10 +163,110 @@
                            FontSize="12"/>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <Button x:Name="ExportButton"
-                            Content="Export Report"
-                            Click="ExportButton_Click"
+                    <!-- Export Format Buttons -->
+                    <Button x:Name="ExportExcelButton"
+                            Content="Export Excel"
+                            Click="ExportExcelButton_Click"
                             Background="#27AE60"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Padding="12,6"
+                            FontSize="12"
+                            Margin="0,0,5,0"
+                            Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    CornerRadius="3"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                                VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#229954"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <Button x:Name="ExportPDFButton"
+                            Content="Export PDF"
+                            Click="ExportPDFButton_Click"
+                            Background="#3498DB"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Padding="12,6"
+                            FontSize="12"
+                            Margin="0,0,5,0"
+                            Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    CornerRadius="3"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                                VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#2980B9"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <Button x:Name="ExportJSONButton"
+                            Content="Export JSON"
+                            Click="ExportJSONButton_Click"
+                            Background="#F39C12"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Padding="12,6"
+                            FontSize="12"
+                            Margin="0,0,5,0"
+                            Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    CornerRadius="3"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                                VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#D68910"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <Button x:Name="ExportBCFButton"
+                            Content="Export BCF"
+                            Click="ExportBCFButton_Click"
+                            Background="#9B59B6"
                             Foreground="White"
                             BorderThickness="0"
                             Padding="12,6"
@@ -163,7 +289,7 @@
                                 </Setter>
                                 <Style.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#229954"/>
+                                        <Setter Property="Background" Value="#7D3C98"/>
                                     </Trigger>
                                 </Style.Triggers>
                             </Style>

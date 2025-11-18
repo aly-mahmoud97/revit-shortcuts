@@ -11,13 +11,92 @@ namespace RevitShortcuts.Services
     /// <summary>
     /// Service class that performs various QA checks on a Revit document
     /// </summary>
-    public class QACheckService
+    public partial class QACheckService
     {
         private readonly Document _doc;
 
         public QACheckService(Document doc)
         {
             _doc = doc;
+        }
+
+        /// <summary>
+        /// Runs all QA checks and returns a comprehensive model health summary
+        /// </summary>
+        public ModelHealthSummary RunAllChecksWithSummary()
+        {
+            var summary = new ModelHealthSummary();
+            summary.ProjectName = _doc.Title;
+            summary.FilePath = _doc.PathName;
+            summary.GeneratedBy = _doc.Application.Username;
+            summary.Categories = RunAllChecks();
+
+            // Calculate file size
+            if (!string.IsNullOrEmpty(_doc.PathName) && System.IO.File.Exists(_doc.PathName))
+            {
+                var fileInfo = new System.IO.FileInfo(_doc.PathName);
+                summary.FileSizeMB = fileInfo.Length / (1024.0 * 1024.0);
+            }
+
+            // Gather statistics
+            summary.TotalElements = new FilteredElementCollector(_doc)
+                .WhereElementIsNotElementType()
+                .ToElementIds()
+                .Count;
+
+            summary.TotalViews = new FilteredElementCollector(_doc)
+                .OfClass(typeof(View))
+                .Cast<View>()
+                .Count(v => !v.IsTemplate);
+
+            summary.TotalSheets = new FilteredElementCollector(_doc)
+                .OfClass(typeof(ViewSheet))
+                .ToElementIds()
+                .Count;
+
+            summary.TotalFamilies = new FilteredElementCollector(_doc)
+                .OfClass(typeof(FamilyInstance))
+                .Cast<FamilyInstance>()
+                .Select(fi => fi.Symbol.Family.Name)
+                .Distinct()
+                .Count();
+
+            summary.TotalWarnings = _doc.GetWarnings().Count;
+
+            // Calculate check statistics
+            summary.TotalChecks = summary.Categories.Sum(c => c.Results.Count);
+            summary.PassedChecks = summary.Categories.Sum(c => c.PassedCount);
+            summary.FailedChecks = summary.Categories.Sum(c => c.FailedCount);
+            summary.TotalIssues = summary.Categories.Sum(c => c.TotalIssues);
+
+            // Count by severity
+            foreach (var category in summary.Categories)
+            {
+                foreach (var result in category.Results)
+                {
+                    if (!result.Passed)
+                    {
+                        switch (result.Severity)
+                        {
+                            case IssueSeverity.Critical:
+                                summary.CriticalIssues++;
+                                break;
+                            case IssueSeverity.Error:
+                                summary.ErrorIssues++;
+                                break;
+                            case IssueSeverity.Warning:
+                                summary.WarningIssues++;
+                                break;
+                            case IssueSeverity.Info:
+                                summary.InfoIssues++;
+                                break;
+                        }
+                    }
+                }
+            }
+
+            summary.CalculateQualityScore();
+            return summary;
         }
 
         /// <summary>
@@ -31,6 +110,7 @@ namespace RevitShortcuts.Services
             var modelIntegrity = new QACheckCategory("Model Integrity");
             modelIntegrity.Results.Add(CheckForWarnings());
             modelIntegrity.Results.Add(CheckForErrors());
+            modelIntegrity.Results.Add(CheckWarningsBySeverity());
             modelIntegrity.Results.Add(CheckForUnplacedRooms());
             modelIntegrity.Results.Add(CheckForUnenclosedRooms());
             UpdateCategoryStats(modelIntegrity);
@@ -44,26 +124,82 @@ namespace RevitShortcuts.Services
             UpdateCategoryStats(geometry);
             categories.Add(geometry);
 
-            // Element Properties
-            var properties = new QACheckCategory("Element Properties");
-            properties.Results.Add(CheckUnnamedViews());
-            properties.Results.Add(CheckUnnamedSheets());
-            properties.Results.Add(CheckMissingParameters());
-            UpdateCategoryStats(properties);
-            categories.Add(properties);
+            // Families
+            var families = new QACheckCategory("Families");
+            families.Results.Add(CheckInPlaceFamilies());
+            families.Results.Add(CheckOvercomplicatedFamilies());
+            families.Results.Add(CheckUnusedFamilies());
+            UpdateCategoryStats(families);
+            categories.Add(families);
 
-            // Standards & Naming
-            var standards = new QACheckCategory("Standards & Naming");
-            standards.Results.Add(CheckNamingConventions());
-            standards.Results.Add(CheckViewTemplates());
-            UpdateCategoryStats(standards);
-            categories.Add(standards);
+            // Resources (Materials, Groups, CAD)
+            var resources = new QACheckCategory("Resources");
+            resources.Results.Add(CheckUnusedMaterials());
+            resources.Results.Add(CheckUnusedGroups());
+            resources.Results.Add(CheckUnusedCADLinks());
+            UpdateCategoryStats(resources);
+            categories.Add(resources);
+
+            // Views & Sheets
+            var viewsSheets = new QACheckCategory("Views & Sheets");
+            viewsSheets.Results.Add(CheckTotalAndUnusedViews());
+            viewsSheets.Results.Add(CheckViewsNotOnSheets());
+            viewsSheets.Results.Add(CheckUnnamedViews());
+            viewsSheets.Results.Add(CheckUnnamedSheets());
+            viewsSheets.Results.Add(CheckDuplicateSheetNumbers());
+            viewsSheets.Results.Add(CheckMissingSheetNumbers());
+            viewsSheets.Results.Add(CheckTitleblockParameters());
+            viewsSheets.Results.Add(CheckViewGraphicsConsistency());
+            UpdateCategoryStats(viewsSheets);
+            categories.Add(viewsSheets);
+
+            // Naming Standards
+            var namingStandards = new QACheckCategory("Naming Standards");
+            namingStandards.Results.Add(CheckFamilyNamingStandards());
+            namingStandards.Results.Add(CheckViewNamingStandards());
+            namingStandards.Results.Add(CheckNamingConventions());
+            UpdateCategoryStats(namingStandards);
+            categories.Add(namingStandards);
+
+            // Parameters
+            var parameters = new QACheckCategory("Parameters");
+            parameters.Results.Add(CheckMissingParameters());
+            parameters.Results.Add(CheckTypeVsInstanceParameters());
+            UpdateCategoryStats(parameters);
+            categories.Add(parameters);
+
+            // Rooms & Spaces
+            var roomsSpaces = new QACheckCategory("Rooms & Spaces");
+            roomsSpaces.Results.Add(CheckDuplicateRooms());
+            UpdateCategoryStats(roomsSpaces);
+            categories.Add(roomsSpaces);
+
+            // Coordination
+            var coordination = new QACheckCategory("Coordination");
+            coordination.Results.Add(CheckCoordinateSystem());
+            coordination.Results.Add(CheckLinkAlignment());
+            UpdateCategoryStats(coordination);
+            categories.Add(coordination);
+
+            // Schedules
+            var schedules = new QACheckCategory("Schedules");
+            schedules.Results.Add(CheckScheduleHealth());
+            UpdateCategoryStats(schedules);
+            categories.Add(schedules);
+
+            // Annotations
+            var annotations = new QACheckCategory("Annotations");
+            annotations.Results.Add(CheckAnnotationIssues());
+            UpdateCategoryStats(annotations);
+            categories.Add(annotations);
 
             // Performance
             var performance = new QACheckCategory("Performance");
             performance.Results.Add(CheckLargeFileSize());
+            performance.Results.Add(CheckModelPerformanceMetrics());
             performance.Results.Add(CheckLinkedFiles());
             performance.Results.Add(CheckImportedCAD());
+            performance.Results.Add(CheckViewTemplates());
             UpdateCategoryStats(performance);
             categories.Add(performance);
 
@@ -72,6 +208,7 @@ namespace RevitShortcuts.Services
             {
                 var worksets = new QACheckCategory("Worksets");
                 worksets.Results.Add(CheckWorksetOrganization());
+                worksets.Results.Add(CheckWorksetMisassignments());
                 UpdateCategoryStats(worksets);
                 categories.Add(worksets);
             }

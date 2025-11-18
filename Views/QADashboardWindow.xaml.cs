@@ -16,7 +16,7 @@ namespace RevitShortcuts.Views
     {
         private readonly Document _doc;
         private readonly UIDocument _uiDoc;
-        private List<QACheckCategory> _categories;
+        private ModelHealthSummary _summary;
 
         public QADashboardWindow(UIDocument uiDoc)
         {
@@ -32,19 +32,21 @@ namespace RevitShortcuts.Views
         {
             try
             {
-                StatusText.Text = "Running QA checks...";
+                StatusText.Text = "Running comprehensive QA checks...";
                 RefreshButton.IsEnabled = false;
+                DisableExportButtons();
 
                 var qaService = new QACheckService(_doc);
-                _categories = qaService.RunAllChecks();
+                _summary = qaService.RunAllChecksWithSummary();
 
                 DisplayResults();
 
-                StatusText.Text = $"QA checks completed at {DateTime.Now:HH:mm:ss}";
+                StatusText.Text = $"QA checks completed at {DateTime.Now:HH:mm:ss} - Quality Score: {_summary.OverallQualityScore:F1}";
+                EnableExportButtons();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error running QA checks: {ex.Message}", "Error",
+                MessageBox.Show($"Error running QA checks: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 StatusText.Text = "Error running checks";
             }
@@ -54,29 +56,60 @@ namespace RevitShortcuts.Views
             }
         }
 
+        private void DisableExportButtons()
+        {
+            ExportExcelButton.IsEnabled = false;
+            ExportPDFButton.IsEnabled = false;
+            ExportJSONButton.IsEnabled = false;
+            ExportBCFButton.IsEnabled = false;
+        }
+
+        private void EnableExportButtons()
+        {
+            ExportExcelButton.IsEnabled = true;
+            ExportPDFButton.IsEnabled = true;
+            ExportJSONButton.IsEnabled = true;
+            ExportBCFButton.IsEnabled = true;
+        }
+
         private void DisplayResults()
         {
             // Clear existing content
             SummaryPanel.Children.Clear();
             CategoriesPanel.Children.Clear();
 
-            // Calculate totals
-            int totalChecks = _categories.Sum(c => c.Results.Count);
-            int totalPassed = _categories.Sum(c => c.PassedCount);
-            int totalFailed = _categories.Sum(c => c.FailedCount);
-            int totalIssues = _categories.Sum(c => c.TotalIssues);
+            // Display quality score
+            QualityScoreText.Text = _summary.OverallQualityScore.ToString("F1");
+            QualityGradeText.Text = _summary.QualityGrade;
+            SetGradeBadgeColor(_summary.QualityGrade);
 
             // Create summary cards
-            CreateSummaryCard("Total Checks", totalChecks.ToString(), "#3498DB");
-            CreateSummaryCard("Passed", totalPassed.ToString(), "#27AE60");
-            CreateSummaryCard("Failed", totalFailed.ToString(), "#E74C3C");
-            CreateSummaryCard("Total Issues", totalIssues.ToString(), "#F39C12");
+            CreateSummaryCard("Total Checks", _summary.TotalChecks.ToString(), "#3498DB");
+            CreateSummaryCard("Passed", _summary.PassedChecks.ToString(), "#27AE60");
+            CreateSummaryCard("Failed", _summary.FailedChecks.ToString(), "#E74C3C");
+            CreateSummaryCard("Critical", _summary.CriticalIssues.ToString(), "#C0392B");
 
             // Create category sections
-            foreach (var category in _categories)
+            foreach (var category in _summary.Categories)
             {
                 CreateCategorySection(category);
             }
+        }
+
+        private void SetGradeBadgeColor(string grade)
+        {
+            var color = grade switch
+            {
+                "A" => "#27AE60",
+                "B" => "#2ECC71",
+                "C" => "#F39C12",
+                "D" => "#E67E22",
+                "F" => "#E74C3C",
+                _ => "#95A5A6"
+            };
+
+            QualityGradeBadge.Background = new SolidColorBrush(
+                (System.Windows.Media.Color)ColorConverter.ConvertFromString(color));
         }
 
         private void CreateSummaryCard(string title, string value, string color)
@@ -346,88 +379,85 @@ namespace RevitShortcuts.Views
             RunQAChecks();
         }
 
-        private void ExportButton_Click(object sender, RoutedEventArgs e)
+        private void ExportExcelButton_Click(object sender, RoutedEventArgs e)
+        {
+            ExportReport("Excel", "*.xlsx", "Excel Files (*.xlsx)|*.xlsx");
+        }
+
+        private void ExportPDFButton_Click(object sender, RoutedEventArgs e)
+        {
+            ExportReport("PDF", "*.pdf", "PDF Files (*.pdf)|*.pdf");
+        }
+
+        private void ExportJSONButton_Click(object sender, RoutedEventArgs e)
+        {
+            ExportReport("JSON", "*.json", "JSON Files (*.json)|*.json");
+        }
+
+        private void ExportBCFButton_Click(object sender, RoutedEventArgs e)
+        {
+            ExportReport("BCF", "*.bcfzip", "BCF Files (*.bcfzip)|*.bcfzip");
+        }
+
+        private void ExportReport(string format, string defaultExt, string filter)
         {
             try
             {
+                if (_summary == null)
+                {
+                    MessageBox.Show("No report data available. Please run checks first.", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
                 var saveDialog = new Microsoft.Win32.SaveFileDialog
                 {
-                    Filter = "Text File (*.txt)|*.txt|CSV File (*.csv)|*.csv",
-                    FileName = $"QA_Report_{_doc.Title}_{DateTime.Now:yyyyMMdd_HHmmss}"
+                    Filter = filter,
+                    DefaultExt = defaultExt,
+                    FileName = $"QA_Report_{_doc.Title.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd_HHmmss}"
                 };
 
                 if (saveDialog.ShowDialog() == true)
                 {
-                    ExportReport(saveDialog.FileName, saveDialog.FilterIndex);
-                    MessageBox.Show($"Report exported successfully to:\n{saveDialog.FileName}",
+                    StatusText.Text = $"Exporting {format} report...";
+                    DisableExportButtons();
+
+                    var exportService = new ReportExportService(_doc, _summary);
+
+                    switch (format)
+                    {
+                        case "Excel":
+                            exportService.ExportToExcel(saveDialog.FileName);
+                            break;
+                        case "PDF":
+                            exportService.ExportToPDF(saveDialog.FileName);
+                            break;
+                        case "JSON":
+                            exportService.ExportToJSON(saveDialog.FileName);
+                            break;
+                        case "BCF":
+                            exportService.ExportToBCF(saveDialog.FileName);
+                            break;
+                    }
+
+                    MessageBox.Show($"{format} report exported successfully to:\n{saveDialog.FileName}",
                         "Export Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    StatusText.Text = $"{format} export completed successfully";
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error exporting report: {ex.Message}", "Error",
+                MessageBox.Show($"Error exporting {format} report:\n{ex.Message}\n\nStack Trace:\n{ex.StackTrace}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
+                StatusText.Text = $"Error exporting {format} report";
             }
-        }
-
-        private void ExportReport(string filePath, int filterIndex)
-        {
-            var sb = new StringBuilder();
-
-            // Header
-            sb.AppendLine("QA & Quality Checks Report");
-            sb.AppendLine("=" + new string('=', 50));
-            sb.AppendLine($"Project: {_doc.Title}");
-            sb.AppendLine($"Date: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-            sb.AppendLine($"User: {_doc.Application.Username}");
-            sb.AppendLine();
-
-            // Summary
-            int totalChecks = _categories.Sum(c => c.Results.Count);
-            int totalPassed = _categories.Sum(c => c.PassedCount);
-            int totalFailed = _categories.Sum(c => c.FailedCount);
-            int totalIssues = _categories.Sum(c => c.TotalIssues);
-
-            sb.AppendLine("SUMMARY");
-            sb.AppendLine("-" + new string('-', 50));
-            sb.AppendLine($"Total Checks: {totalChecks}");
-            sb.AppendLine($"Passed: {totalPassed}");
-            sb.AppendLine($"Failed: {totalFailed}");
-            sb.AppendLine($"Total Issues: {totalIssues}");
-            sb.AppendLine();
-
-            // Detailed results
-            foreach (var category in _categories)
+            finally
             {
-                sb.AppendLine();
-                sb.AppendLine($"{category.CategoryName.ToUpper()}");
-                sb.AppendLine("=" + new string('=', 50));
-                sb.AppendLine($"Passed: {category.PassedCount} | Failed: {category.FailedCount} | Issues: {category.TotalIssues}");
-                sb.AppendLine();
-
-                foreach (var result in category.Results)
-                {
-                    sb.AppendLine($"  [{(result.Passed ? "PASS" : "FAIL")}] {result.CheckName}");
-                    sb.AppendLine($"    Severity: {result.Severity}");
-                    sb.AppendLine($"    {result.Message}");
-
-                    if (!string.IsNullOrEmpty(result.Details))
-                    {
-                        sb.AppendLine($"    Details: {result.Details}");
-                    }
-
-                    if (result.AffectedElements != null && result.AffectedElements.Count > 0)
-                    {
-                        sb.AppendLine($"    Affected Elements: {result.AffectedElements.Count}");
-                        sb.AppendLine($"    Element IDs: {string.Join(", ", result.AffectedElements.Take(20).Select(id => id.IntegerValue))}");
-                    }
-
-                    sb.AppendLine();
-                }
+                EnableExportButtons();
             }
-
-            File.WriteAllText(filePath, sb.ToString());
         }
+
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
