@@ -2,15 +2,35 @@
 
 A template for creating Revit add-ins using C#. This add-in provides a basic structure for building custom commands and functionality for Autodesk Revit.
 
+## Features
+
+- **Hello World Command**: Basic example command demonstrating Revit add-in functionality
+- **QA Dashboard**: Comprehensive Quality Assurance dashboard for checking Revit models
+  - Model integrity checks (warnings, errors, unplaced rooms)
+  - Geometry checks (overlapping walls, overlapping rooms, short walls)
+  - Element properties validation (unnamed views, sheets, missing parameters)
+  - Standards & naming conventions
+  - Performance checks (file size, linked files, imported CAD)
+  - Workset organization (for workshared models)
+  - Export QA reports to TXT/CSV
+  - Visual element highlighting in the model
+
 ## Project Structure
 
 ```
 RevitShortcuts/
-├── Application.cs              # Main application class (IExternalApplication)
+├── Application.cs                      # Main application class (IExternalApplication)
 ├── Commands/
-│   └── HelloWorldCommand.cs   # Example external command
-├── RevitShortcuts.csproj      # C# project file
-└── RevitShortcuts.addin       # Revit manifest file
+│   ├── HelloWorldCommand.cs           # Example external command
+│   └── QADashboardCommand.cs          # QA Dashboard launcher command
+├── Services/
+│   ├── QACheckService.cs              # QA checking logic
+│   └── QACheckResult.cs               # Data models for QA results
+├── Views/
+│   ├── QADashboardWindow.xaml         # WPF UI for QA Dashboard
+│   └── QADashboardWindow.xaml.cs      # Dashboard code-behind
+├── RevitShortcuts.csproj              # C# project file
+└── RevitShortcuts.addin               # Revit manifest file
 ```
 
 ## Prerequisites
@@ -117,16 +137,22 @@ For easier development, you can automatically copy files after each build:
 
 2. **Check for the Ribbon Tab:**
    - Look for a new tab called "Revit Shortcuts" in the Revit ribbon
-   - You should see a "Commands" panel with a "Hello World" button
+   - You should see a "Commands" panel with two buttons:
+     - "Hello World" - Example command
+     - "QA Dashboard" - Quality assurance checks
 
 3. **Check Revit Add-in Manager:**
    - In Revit, type `AD` (for Add-in Manager)
    - Or go to: Revit button → Options → Add-in Manager
    - Look for "Revit Shortcuts" in the list
 
-4. **Test the Command:**
-   - Click the "Hello World" button
-   - You should see a dialog showing project information
+4. **Test the Commands:**
+   - **Hello World**: Click the button to see a dialog showing project information
+   - **QA Dashboard**: Click to open the comprehensive QA checking dashboard
+     - Requires an open Revit document
+     - Runs multiple quality checks on your model
+     - Displays results in an interactive dashboard
+     - Allows exporting reports and selecting affected elements
 
 ## Troubleshooting
 
@@ -221,8 +247,13 @@ buttonData.LargeImage = icon;
 
 ## Project Files Explained
 
-- **Application.cs**: Loaded when Revit starts, creates the ribbon UI
-- **HelloWorldCommand.cs**: Example command that executes when button is clicked
+- **Application.cs**: Loaded when Revit starts, creates the ribbon UI with buttons
+- **Commands/HelloWorldCommand.cs**: Example command that executes when button is clicked
+- **Commands/QADashboardCommand.cs**: Command that launches the QA Dashboard window
+- **Services/QACheckService.cs**: Core QA checking logic with 15+ quality checks
+- **Services/QACheckResult.cs**: Data models for storing QA check results
+- **Views/QADashboardWindow.xaml**: WPF user interface definition for the dashboard
+- **Views/QADashboardWindow.xaml.cs**: Code-behind for the dashboard UI logic
 - **RevitShortcuts.csproj**: Project configuration, references, build settings
 - **RevitShortcuts.addin**: Manifest file that tells Revit how to load the add-in
 
