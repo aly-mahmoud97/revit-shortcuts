@@ -174,7 +174,7 @@ namespace RevitShortcuts.Services
                 result.AffectedElements = rooms.Select(r => r.Id).ToList();
                 result.Details = result.Passed
                     ? ""
-                    : string.Join("\n", rooms.Take(10).Select(r => $"Room: {r.Name} (ID: {r.Id.IntegerValue})"));
+                    : string.Join("\n", rooms.Take(10).Select(r => $"Room: {r.Name} (ID: {r.Id.Value})"));
             }
             catch (Exception ex)
             {
@@ -196,18 +196,40 @@ namespace RevitShortcuts.Services
 
             try
             {
-                var rooms = new FilteredElementCollector(_doc)
+                var unenclosedRooms = new List<Room>();
+                var allRooms = new FilteredElementCollector(_doc)
                     .OfClass(typeof(SpatialElement))
                     .OfType<Room>()
-                    .Where(r => r.Area > 0 && !r.IsAreaSchemeValid)
+                    .Where(r => r.Area > 0)
                     .ToList();
 
-                result.IssueCount = rooms.Count;
-                result.Passed = rooms.Count == 0;
+                // Check each room for proper enclosure by checking boundary segments
+                foreach (var room in allRooms)
+                {
+                    try
+                    {
+                        var options = new SpatialElementBoundaryOptions();
+                        var boundaries = room.GetBoundarySegments(options);
+
+                        // If room has no boundary segments or very few, it's likely not properly enclosed
+                        if (boundaries == null || boundaries.Count == 0)
+                        {
+                            unenclosedRooms.Add(room);
+                        }
+                    }
+                    catch
+                    {
+                        // If we can't get boundaries, the room might not be properly enclosed
+                        unenclosedRooms.Add(room);
+                    }
+                }
+
+                result.IssueCount = unenclosedRooms.Count;
+                result.Passed = unenclosedRooms.Count == 0;
                 result.Message = result.Passed
                     ? "All rooms are properly enclosed"
-                    : $"{rooms.Count} unenclosed room(s) found";
-                result.AffectedElements = rooms.Select(r => r.Id).ToList();
+                    : $"{unenclosedRooms.Count} unenclosed room(s) found";
+                result.AffectedElements = unenclosedRooms.Select(r => r.Id).ToList();
             }
             catch (Exception ex)
             {

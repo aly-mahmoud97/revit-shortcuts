@@ -195,7 +195,7 @@ namespace RevitShortcuts.Views
                 Margin = new Thickness(0, 0, 0, 10)
             };
 
-            var grid = new Grid();
+            var grid = new System.Windows.Controls.Grid();
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
@@ -253,7 +253,7 @@ namespace RevitShortcuts.Views
                 contentStack.Children.Add(detailsText);
             }
 
-            Grid.SetColumn(contentStack, 0);
+            System.Windows.Controls.Grid.SetColumn(contentStack, 0);
             grid.Children.Add(contentStack);
 
             // Severity badge
@@ -297,7 +297,7 @@ namespace RevitShortcuts.Views
                 severityPanel.Children.Add(showButton);
             }
 
-            Grid.SetColumn(severityPanel, 1);
+            System.Windows.Controls.Grid.SetColumn(severityPanel, 1);
             grid.Children.Add(severityPanel);
 
             itemPanel.Child = grid;
@@ -419,7 +419,7 @@ namespace RevitShortcuts.Views
                     if (result.AffectedElements != null && result.AffectedElements.Count > 0)
                     {
                         sb.AppendLine($"    Affected Elements: {result.AffectedElements.Count}");
-                        sb.AppendLine($"    Element IDs: {string.Join(", ", result.AffectedElements.Take(20).Select(id => id.IntegerValue))}");
+                        sb.AppendLine($"    Element IDs: {string.Join(", ", result.AffectedElements.Take(20).Select(id => id.Value))}");
                     }
 
                     sb.AppendLine();
